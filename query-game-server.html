@@ -1,0 +1,47 @@
+<script type="text/javascript">
+    RED.nodes.registerType('query-game-server', {
+        category: 'advanced',
+        color: '#a6bbcf',
+        defaults: {
+            name:             { value: '' },
+            type:             { value: '', required: true },
+            host:             { value: '', type: 'server', required: true },
+            port:             { value: '' },
+            halt_if:          { value: '' }
+        },
+        inputs:1,
+        outputs:1,
+        icon: "icons/down_arrow.png",
+        label: function() {
+            return this.name || 'query-game-server' || `query-game-server: ${this.server}`;
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="query-game-server">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-type"><i class="fa fa-cube"></i> Type</label>
+        <input type="text" id="node-input-type">
+        <span>Check <a href="https://github.com/sonicsnes/node-gamedig">node-gamedig</a> README for supported types</span>
+    </div>
+    <div class="form-row">
+        <label for="node-input-host"><i class="fa fa-server"></i> Host</label>
+        <input type="text" id="node-input-host" />
+        <span>Host without port</span>
+    </div>
+    <div class="form-row">
+        <label for="node-input-port"><i class="fa fa-server"></i> Port</label>
+        <input type="text" id="node-input-port" />
+        <span>Query port for the server (not always the same as the join port)</span>
+    </div>
+    
+    <div class="form-row">
+        <label for="node-input-halt_if"><i class="fa fa-hand-paper-o"></i> Halt If</label>
+        <input type="text" id="node-input-halt_if" placeholder="off"/>
+        <span>Enter "online" or "offline" (without quotes) to filter out the state you don't want.</span>
+    </div>
+</script>
