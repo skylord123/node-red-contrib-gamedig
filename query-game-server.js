@@ -1,9 +1,6 @@
-console.log("test");
 module.exports = function(RED) {
 	var Gamedig = require('gamedig');
     function queryGameServer(config) {
-		console.log("CREATED YAY");
-		console.log(Gamedig);
         RED.nodes.createNode(this, config);
         var node = this;
         node.on('input', function(msg) {
