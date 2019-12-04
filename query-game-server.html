@@ -1,0 +1,107 @@
+<script type="text/javascript">
+    RED.nodes.registerType('query-game-server', {
+        category: 'advanced',
+        color: '#a6bbcf',
+        defaults: {
+            name:             { value: '' },
+            server_type:      { value: '', required: true },
+            host:             { value: '', required: true },
+            port:             { value: '' },
+            halt_if:          { value: '' }
+        },
+        inputs:1,
+        outputs:1,
+        icon: "icons/down_arrow.png",
+        label: function() {
+            if(this.host) {
+                return `Query: ${this.host}`;
+            }
+
+            return this.name || 'Query Game Server';
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="query-game-server">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-server_type"><i class="fa fa-cube"></i> Server Type</label>
+        <input type="text" id="node-input-server_type">
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <span>Check <a href="https://github.com/sonicsnes/node-gamedig#games-list" style="color:#0000EE;" target="_blank">here</a> for a list of supported server types.</span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-host"><i class="fa fa-server"></i> Host</label>
+        <input type="text" id="node-input-host" />
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <span>Host without port</span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-port"><i class="fa fa-server"></i> Port</label>
+        <input type="text" id="node-input-port" />
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <span>Query port for the server (not always the same as the join port)</span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-halt_if"><i class="fa fa-hand-paper-o"></i> Halt If</label>
+        <select type="text" id="node-input-halt_if">
+            <option value="">Do not halt</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <span>Enter "online" or "offline" (without quotes) to filter out the state you don't want.</span>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="query-game-server">
+    <p>Query a Game Server</p>
+    <h3>Config</h3>
+    <dl class="message-properties">
+        <dt>Server Type <span class="property-type">string</span></dt>
+        <dt>Host <span class="property-type">string</span></dt>
+        <dt>Port <span class="property-type">integer</span></dt>
+        <dt>Halt If <span class="property-type">string</span></dt>
+    </dl>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt class="optional">
+            msg.server_type <span class="property-type">string</span>
+        </dt>
+        <dd>Server type to query. Check <a href="https://github.com/sonicsnes/node-gamedig#games-list" style="color:#0000EE;" target="_blank">here</a> for a list of supported server types</dd>
+        <dt class="optional">
+            msg.host <span class="property-type">string</span>
+        </dt>
+        <dd>Server IP/Hostname</dd>
+        <dt class="optional">
+            msg.port <span class="property-type">integer</span>
+        </dt>
+        <dd>Query port of the server</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>
+            msg.payload <span class="property-type">string</span>
+        </dt>
+        <dd>Returns either <code>online</code> or <code>offline</code> depending on if we successfully query the server or not.</dd>
+        <dt>
+            msg.data <span class="property-type">object</span>
+        </dt>
+        <dd>Returns back the data we got from GameDig. Click <a href="https://github.com/sonicsnes/node-gamedig#return-value" style="color:#0000EE;">here</a> for more information on what this contains.</dd>
+    </dl>
+</script>
