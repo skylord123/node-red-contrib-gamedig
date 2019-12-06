@@ -9,32 +9,31 @@ module.exports = function(RED) {
 		this.halt_if = config.halt_if;
         var node = this;
         node.on('input', function(msg) {
-        	var serverInfo = {
-        		'type': node.server_type,
-        		'host': node.host
-        	};
+
+        	if(node.server_type) {
+				msg.host = node.server_type;
+			}
+
+			if(node.host) {
+				msg.host = node.host;
+			}
 
         	if(node.port) {
-        		serverInfo['port'] = node.port;
+        		msg.port = node.port;
         	}
 
-        	if(msg.server_type) {
-        		serverInfo['type'] = msg.server_type;
+        	if(node.halt_if) {
+        		msg.halt_if = node.halt_if;
 			}
 
-			if(msg.host) {
-				serverInfo['host'] = msg.host;
-			}
-
-			if(msg.port) {
-				serverInfo['port'] = msg.port;
-			}
-
-			Gamedig.query(serverInfo)
+			Gamedig.query({
+				'type': msg.server_type,
+				'host': msg.host
+			})
 				.then(function(state) {
 					msg.payload = 'online';
 					msg.data = state;
-		            if (msg.payload === node.halt_if) {
+		            if (msg.payload === msg.halt_if) {
 		                return null;
 		            }
 	            	node.send(msg);
@@ -43,7 +42,7 @@ module.exports = function(RED) {
 					msg.data = {
 						'error': error
 					};
-		            if (msg.payload === node.halt_if) {
+		            if (msg.payload === msg.halt_if) {
 		                return null;
 		            }
 	            	node.send(msg);
