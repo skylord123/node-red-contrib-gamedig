@@ -11,7 +11,7 @@ module.exports = function(RED) {
         node.on('input', function(msg) {
 
         	if(node.server_type) {
-				msg.host = node.server_type;
+				msg.server_type = node.server_type;
 			}
 
 			if(node.host) {
@@ -36,7 +36,8 @@ module.exports = function(RED) {
 		            if (msg.payload === msg.halt_if) {
 		                return null;
 		            }
-	            	node.send(msg);
+                    node.status({fill:"green",shape:"dot",text: 'Online ' + msg.data.players.length + ' players' });
+                    node.send(msg);
 				}).catch(function(error) {
 					msg.payload = 'offline';
 					msg.data = {
@@ -45,7 +46,8 @@ module.exports = function(RED) {
 		            if (msg.payload === msg.halt_if) {
 		                return null;
 		            }
-	            	node.send(msg);
+                    node.status({fill:"red", shape:"dot", text: 'Offline'});
+                node.send(msg);
 				});
         });
     }
