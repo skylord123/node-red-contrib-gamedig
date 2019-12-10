@@ -7,6 +7,9 @@ module.exports = function(RED) {
 		this.host = config.host;
 		this.port = config.port;
 		this.halt_if = config.halt_if;
+		this.max_attempts = config.max_attempts || 1;
+		this.socket_timeout = config.socket_timeout || 2000;
+		this.attempt_timeout = config.attempt_timeout || 10000;
         var node = this;
         node.on('input', function(msg) {
 
@@ -26,9 +29,25 @@ module.exports = function(RED) {
         		msg.halt_if = node.halt_if;
 			}
 
+        	if(node.max_attempts) {
+        		msg.max_attempts = node.max_attempts;
+			}
+
+			if(node.socket_timeout) {
+				msg.socket_timeout = node.socket_timeout;
+			}
+
+			if(node.attempt_timeout) {
+				msg.attempt_timeout = node.attempt_timeout;
+			}
+
 			Gamedig.query({
 				'type': msg.server_type,
-				'host': msg.host
+				'host': msg.host,
+				'port': msg.port,
+				'maxAttempts': msg.max_attempts,
+				'socketTimeout': msg.socket_timeout,
+				'attemptTimeout': msg.attempt_timeout
 			})
 				.then(function(state) {
 					msg.payload = 'online';

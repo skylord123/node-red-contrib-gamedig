@@ -7,7 +7,10 @@
             server_type:      { value: '', required: true },
             host:             { value: '', required: true },
             port:             { value: '' },
-            halt_if:          { value: '' }
+            halt_if:          { value: '' },
+            max_attempts:     { value: '' },
+            socket_timeout:   { value: '' },
+            attempt_timeout:  { value: '' },
         },
         inputs:1,
         outputs:1,
@@ -56,7 +59,7 @@
     </div>
     <div class="form-row">
         <label>&nbsp;</label>
-        <span>Query port for the server (not always the same as the join port)</span>
+        <span>Query port for the server (not always the same as the join port). If this is left blank it will use the default port for the server type specified.</span>
     </div>
 
     <div class="form-row">
@@ -70,6 +73,33 @@
     <div class="form-row">
         <label>&nbsp;</label>
         <span>Enter "online" or "offline" (without quotes) to filter out the state you don't want.</span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-max_attempts"><i class="fa fa-server"></i> Max Attempts</label>
+        <input type="text" id="node-input-max_attempts" placeholder="1" />
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <span>Number of attempts to query server in case of failure.</span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-socket_timeout"><i class="fa fa-server"></i> Socket Timeout</label>
+        <input type="text" id="node-input-socket_timeout" placeholder="2000" />
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <span>Milliseconds to wait for a single packet. Beware that increasing this will cause many queries to take longer even if the server is online.</span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-attempt_timeout"><i class="fa fa-server"></i> Attempt Timeout</label>
+        <input type="text" id="node-input-attempt_timeout" placeholder="10000" />
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <span>Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first.</span>
     </div>
 </script>
 
@@ -96,6 +126,18 @@
             msg.port <span class="property-type">integer</span>
         </dt>
         <dd>Query port of the server</dd>
+        <dt class="optional">
+            msg.max_attempts <span class="property-type">integer</span>
+        </dt>
+        <dd>Number of attempts to query server in case of failure.</dd>
+        <dt class="optional">
+            msg.socket_timeout <span class="property-type">integer</span>
+        </dt>
+        <dd>Milliseconds to wait for a single packet. Beware that increasing this will cause many queries to take longer even if the server is online.</dd>
+        <dt class="optional">
+            msg.attempt_timeout <span class="property-type">integer</span>
+        </dt>
+        <dd>Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first.</dd>
     </dl>
     <h3>Outputs</h3>
     <dl class="message-properties">
@@ -107,5 +149,33 @@
             msg.data <span class="property-type">object</span>
         </dt>
         <dd>Returns back the data we got from GameDig. Click <a href="https://github.com/sonicsnes/node-gamedig#return-value" style="color:#0000EE;">here</a> for more information on what this contains.</dd>
+        <dt>
+            msg.data.error <span class="property-type">string</span>
+        </dt>
+        <dd>Reason the server failed to query. Only returns if <code>msg.payload</code> is <code>offline</code>.</dd>
+        <dt>
+            msg.server_type <span class="property-type">string</span>
+        </dt>
+        <dt>
+            msg.server_type <span class="property-type">string</span>
+        </dt>
+        <dt>
+            msg.host <span class="property-type">string</span>
+        </dt>
+        <dt>
+            msg.port <span class="property-type">integer</span>
+        </dt>
+        <dt>
+            msg.halt_if <span class="property-type">string</span>
+        </dt>
+        <dt>
+            msg.max_attempts <span class="property-type">integer</span>
+        </dt>
+        <dt>
+            msg.socket_timeout <span class="property-type">integer</span>
+        </dt>
+        <dt>
+            msg.attempt_timeout <span class="property-type">integer</span>
+        </dt>
     </dl>
 </script>
