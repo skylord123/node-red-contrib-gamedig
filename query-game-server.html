@@ -14,7 +14,7 @@
         icon: "icons/server.png",
         label: function() {
             if(this.host) {
-                return `Query: ${this.host}`;
+                return (this.server_type ? this.server_type : 'Query') + ': ' + this.host + (this.port ? ":" + this.port : '');
             }
 
             return this.name || 'Query Game Server';
