@@ -13,11 +13,15 @@
         outputs:1,
         icon: "icons/server.png",
         label: function() {
+            if(this.name){
+                return this.name;
+            }
+
             if(this.host) {
                 return (this.server_type ? this.server_type : 'Query') + ': ' + this.host + (this.port ? ":" + this.port : '');
             }
 
-            return this.name || 'Query Game Server';
+            return 'Query Game Server';
         }
     });
 </script>
