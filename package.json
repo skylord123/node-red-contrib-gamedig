@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-gamedig",
-  "version": "2.0.1",
+  "version": "2.1.1",
   "description": "Query for the status of any game server using node-red",
   "repository": {
     "type": "git",
@@ -12,13 +12,17 @@
     "url": "https://github.com/skylord123/node-red-contrib-gamedig/issues"
   },
   "homepage": "https://github.com/skylord123/node-red-contrib-gamedig#readme",
-  "keywords": [ "node-red", "gamedig", "query game server" ],
+  "keywords": [
+    "node-red",
+    "gamedig",
+    "query game server"
+  ],
   "node-red": {
     "nodes": {
       "query-game-server": "query-game-server.js"
     }
   },
   "dependencies": {
-    "gamedig": "^2.0.0"
+    "gamedig": "^3.0.0"
   }
 }

@@ -1,8 +1,10 @@
-var Gamedig = require('gamedig');
-
 module.exports = function(RED) {
+	const gamedig = require('gamedig');
+	const fs = require('fs');
+
     function QueryGameServer(config) {
         RED.nodes.createNode(this, config);
+		var node = this;
         this.server_type = config.server_type;
 		this.host = config.host;
 		this.port = config.port;
@@ -10,15 +12,17 @@ module.exports = function(RED) {
 		this.max_attempts = config.max_attempts || 1;
 		this.socket_timeout = config.socket_timeout || 2000;
 		this.attempt_timeout = config.attempt_timeout || 10000;
-        var node = this;
         node.on('input', function(msg) {
-
         	if(node.server_type) {
 				msg.server_type = node.server_type;
 			}
 
 			if(node.host) {
 				msg.host = node.host;
+			}
+			if(!msg.host) {
+				node.error("msg.host missing from input.");
+				return;
 			}
 
         	if(node.port) {
@@ -41,7 +45,7 @@ module.exports = function(RED) {
 				msg.attempt_timeout = node.attempt_timeout;
 			}
 
-			Gamedig.query({
+			gamedig.query({
 				'type': msg.server_type,
 				'host': msg.host,
 				'port': msg.port,
@@ -66,9 +70,33 @@ module.exports = function(RED) {
 		                return null;
 		            }
                     node.status({fill:"red", shape:"dot", text: 'Offline'});
-                node.send(msg);
+                	node.send(msg);
 				});
         });
     }
     RED.nodes.registerType("query-game-server", QueryGameServer);
+
+	RED.httpAdmin.get(
+		"/gamedig/types",
+		RED.auth.needsPermission('gamedig.types'),
+		function(req, res) {
+			// gamedig has no way of listing available server types
+			// so we just use regex to parse the info from the README
+			// this could break so we also reference the gamedig repo
+			let availableTypes = fs.readFileSync(require.resolve("gamedig/README.md"))
+					.toString()
+					.matchAll(/^\| `(.*)` * \| ([a-zA-Z: (0-9)\-'.]*)/gm),
+				results = {};
+
+			for (const match of availableTypes) {
+				if(match[1].indexOf("`<br>`") >= 0) {
+					let names = match[1].split("`<br>`");
+					results[names[0]] = match[2];
+					results[names[1]] = match[2];
+				} else {
+					results[match[1]] = match[2];
+				}
+			}
+			res.json(results);
+		});
 };
