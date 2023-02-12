@@ -23,6 +23,6 @@
     }
   },
   "dependencies": {
-    "gamedig": "^3.0.0"
+    "gamedig": "^4.0.6"
   }
 }
