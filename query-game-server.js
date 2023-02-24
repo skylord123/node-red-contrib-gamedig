@@ -83,20 +83,31 @@ module.exports = function(RED) {
 			// gamedig has no way of listing available server types
 			// so we just use regex to parse the info from the README
 			// this could break so we also reference the gamedig repo
-			let availableTypes = fs.readFileSync(require.resolve("gamedig/README.md"))
-					.toString()
-					.matchAll(/^\| `(.*)` * \| ([a-zA-Z: (0-9)\-'.]*)/gm),
-				results = {};
+			let availableTypesContent = fs.readFileSync(require.resolve("gamedig/games.txt"), 'utf-8')
+				results = [];
 
-			for (const match of availableTypes) {
-				if(match[1].indexOf("`<br>`") >= 0) {
-					let names = match[1].split("`<br>`");
-					results[names[0]] = match[2];
-					results[names[1]] = match[2];
-				} else {
-					results[match[1]] = match[2];
-				}
-			}
+			availableTypesContent
+				.split(/\r?\n/)
+				.forEach(line =>  {
+					if(
+						line.trim().length === 0
+						|| line.trim().length === 0
+						|| line.trim().startsWith('#')
+					) {
+						return;
+					}
+
+					// examples:
+					// avp2|Aliens versus Predator 2 (2001)|gamespy1|port=27888
+					// avp2010|Aliens vs. Predator (2010)|valve|port=27015
+
+					let [game_type, game_name, game_protocol] = line.split('|');
+					results.push({
+						'name': game_type,
+						'type': game_type,
+						'protocol': game_protocol
+					});
+				});
 			res.json(results);
 		});
 };
