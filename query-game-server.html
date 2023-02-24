@@ -30,12 +30,13 @@
         oneditprepare: function() {
             $.getJSON('/gamedig/types', function(data) {
                 let html = '<table>' +
-                    '<thead id="query-game-server-types-table"><tr><td><strong>Type</strong></td><td><strong>Name</strong></td></tr></thead>' +
+                    '<thead id="query-game-server-types-table"><tr><td><strong>Type</strong></td><td><strong>Name</strong></td><td><strong>Protocol</strong></td></tr></thead>' +
                     '<tbody id="query-game-server-type-rows">';
-                for(var type in data) {
+                for(let game of data) {
                     html += "<tr class=\"query-game-server-type-row\">" +
-                        "<td>"+type+"</td>" +
-                        "<td>"+data[type]+"</td>" +
+                        "<td>"+game['type']+"</td>" +
+                        "<td>"+game['name']+"</td>" +
+                        "<td>"+game['protocol']+"</td>" +
                         "</tr>";
                 }
                 html += '</tbody>' +
