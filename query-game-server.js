@@ -12,6 +12,10 @@ module.exports = function(RED) {
 		this.max_attempts = config.max_attempts || 1;
 		this.socket_timeout = config.socket_timeout || 2000;
 		this.attempt_timeout = config.attempt_timeout || 10000;
+		this.given_port_only = config.given_port_only || false;
+		this.ip_family = config.ip_family || 0;
+		this.debug = config.debug || false;
+		this.request_rules = config.request_rules || false;
         node.on('input', function(msg) {
         	if(node.server_type) {
 				msg.server_type = node.server_type;
@@ -45,13 +49,33 @@ module.exports = function(RED) {
 				msg.attempt_timeout = node.attempt_timeout;
 			}
 
+			if(node.given_port_only) {
+				msg.given_port_only = node.given_port_only;
+			}
+
+			if(node.ip_family) {
+				msg.ip_family = node.ip_family;
+			}
+
+			if(node.debug) {
+				msg.debug = node.debug;
+			}
+
+			if(node.request_rules) {
+				msg.request_rules = node.request_rules;
+			}
+
 			gamedig.query({
 				'type': msg.server_type,
 				'host': msg.host,
 				'port': msg.port,
 				'maxAttempts': msg.max_attempts,
 				'socketTimeout': msg.socket_timeout,
-				'attemptTimeout': msg.attempt_timeout
+				'attemptTimeout': msg.attempt_timeout,
+				'givenPortOnly': msg.given_port_only,
+				'ipFamily': msg.ip_family,
+				'debug': msg.debug,
+				'requestRules': msg.request_rules
 			})
 				.then(function(state) {
 					msg.payload = 'online';

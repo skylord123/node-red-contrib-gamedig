@@ -11,6 +11,10 @@
             max_attempts:     { value: '' },
             socket_timeout:   { value: '' },
             attempt_timeout:  { value: '' },
+            given_port_only:  { value: '' },
+            ip_family:        { value: '0' },
+            debug:            { value: '' },
+            request_rules:    { value: '' }
         },
         inputs:1,
         outputs:1,
@@ -79,7 +83,7 @@
     </div>
 
     <div class="form-row">
-        <label for="node-input-port"><i class="fa fa-ethernet"></i> Port</label>
+        <label for="node-input-port"><i class="fa fa-server"></i> Port</label>
         <input type="text" id="node-input-port" placeholder="msg.host" />
     </div>
     <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
@@ -117,11 +121,61 @@
     </div>
 
     <div class="form-row">
-        <label for="node-input-attempt_timeout"><i class="fas fa-cogs"></i> Attempt Timeout</label>
+        <label for="node-input-attempt_timeout"><i class="fa fa-cogs"></i> Attempt Timeout</label>
         <input type="text" id="node-input-attempt_timeout" placeholder="10000" />
     </div>
     <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
         Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first.
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-given_port_only"><i class="fa fa-lock"></i> Lock port</label>
+        <input
+                type="checkbox"
+                id="node-input-given_port_only"
+                style="width: auto; vertical-align: top"
+        />
+        <span>
+            Only attempt to query server on given port (default: false).
+        </span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-debug"><i class="fa fa-bug"></i> Debug mode</label>
+        <input
+                type="checkbox"
+                id="node-input-debug"
+                style="width: auto; vertical-align: top"
+        />
+        <span>
+        Enables massive amounts of debug logging to stdout.
+        </span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-request_rules" style="vertical-align: top"><i class="fa fa-server"></i> Request rules</label>
+        <div style="width: 50%;display: inline-block;">
+            <input
+                    type="checkbox"
+                    id="node-input-request_rules"
+                    style="width: auto; vertical-align: top"
+            />
+            For many valve games, additional 'rules' may be fetched into the unstable raw field by setting this to true. Beware that this may increase query time and this is for Valve games only.
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-ip_family"><i class="fa fa-server"></i> IP Rules</label>
+        <select
+                id="node-input-ip_family"
+                style="width: auto; vertical-align: top">
+            <option value="0">IPv4 and IPv6</option>
+            <option value="4">IPv4</option>
+            <option value="6">IPv6</option>
+        </select>
+    </div>
+    <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
+        IP family/version returned when looking up hostnames via DNS, can be IPv4 and IPv6, IPv4 only or IPv6 only.
     </div>
 
     <h3 id="gamdig-types">Server Types</h3>
@@ -155,7 +209,7 @@
 </script>
 
 <script type="text/html" data-help-name="query-game-server">
-    <p>Query most Game/Voice server's using the <a href="https://github.com/gamedig/node-gamedig" target="_blank">GameDig</a> library.</p>
+    <p>Query most Game/Voice server's using the <a href="https://github.com/gamedig/node-gamedig" target="_blank">GameDig</a> library. I recommend visiting the <a href="https://github.com/gamedig/node-gamedig" target="_blank">node-gamedig GitHub page</a> for more documentation.</p>
 
     <h3>Inputs</h3>
     <dl class="message-properties">
@@ -188,6 +242,26 @@
             msg.attempt_timeout <span class="property-type">integer | null</span>
         </dt>
         <dd>Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first. Ignored if configured on the node.</dd>
+
+        <dt class="optional">
+            msg.given_port_only <span class="property-type">boolean</span>
+        </dt>
+        <dd>Only attempt to query server on given port. Ignored if configured on the node.</dd>
+
+        <dt class="optional">
+            msg.ip_family <span class="property-type">number</span>
+        </dt>
+        <dd>IP family/version returned when looking up hostnames via DNS, can be 0 (IPv4 and IPv6), 4 (IPv4 only) or 6 (IPv6 only). (default 0).</dd>
+
+        <dt class="optional">
+            msg.debug <span class="property-type">boolean</span>
+        </dt>
+        <dd>Enables massive amounts of debug logging to stdout. (default false)</dd>
+
+        <dt class="optional">
+            msg.request_rules <span class="property-type">boolean</span>
+        </dt>
+        <dd>For many valve games, additional 'rules' may be fetched into the unstable raw field by setting this to true. Beware that this may increase query time and this is for Valve games only.</dd>
     </dl>
 
     <h3>Outputs</h3>
