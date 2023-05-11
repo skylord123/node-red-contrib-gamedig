@@ -11,6 +11,11 @@
             max_attempts:     { value: '' },
             socket_timeout:   { value: '' },
             attempt_timeout:  { value: '' },
+            given_port_only:  { value: '' },
+            ip_family:        { value: '0' },
+            debug:            { value: '' },
+            request_rules:    { value: '' },
+            output_options:   { value: '' }
         },
         inputs:1,
         outputs:1,
@@ -28,20 +33,38 @@
             return 'Query Game Server';
         },
         oneditprepare: function() {
+            let server_types = null;
+
             $.getJSON('/gamedig/types', function(data) {
-                let html = '<table>' +
-                    '<thead id="query-game-server-types-table"><tr><td><strong>Type</strong></td><td><strong>Name</strong></td><td><strong>Protocol</strong></td></tr></thead>' +
-                    '<tbody id="query-game-server-type-rows">';
-                for(let game of data) {
-                    html += "<tr class=\"query-game-server-type-row\">" +
-                        "<td>"+game['type']+"</td>" +
-                        "<td>"+game['name']+"</td>" +
-                        "<td>"+game['protocol']+"</td>" +
-                        "</tr>";
+                if(data.result !== 'ok' || !data.hasOwnProperty("server_types"))
+                {
+                    console.error("server_types failed to load");
+                    return;
                 }
-                html += '</tbody>' +
-                    '</table>';
-                $("#query-game-server-types").html(html);
+
+                server_types = data.server_types;
+            });
+
+            $("#node-input-server_type").autoComplete({
+                search: function(val) {
+                    if(!server_types) return false; // ignore until we have the types loaded
+
+                    let matches = [];
+                    server_types.forEach(v => {
+                        if (
+                            v.name.toLowerCase().indexOf(val.toLowerCase()) > -1 ||
+                            v.type.toLowerCase().indexOf(val.toLowerCase()) > -1 ||
+                            v.protocol.toLowerCase().indexOf(val.toLowerCase()) > -1
+                        ) {
+                            matches.push({
+                                value: v.type,
+                                label: `${v.name} (${v.type})`,
+                                protocol: v.protocol
+                            });
+                        }
+                    });
+                    return matches;
+                }
             });
         }
     });
@@ -64,10 +87,10 @@
 
     <div class="form-row">
         <label for="node-input-server_type"><i class="fa fa-cube"></i> Server Type</label>
-        <input type="text" id="node-input-server_type">
+        <input type="text" id="node-input-server_type" placeholder="msg.server_type">
     </div>
     <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
-        View server types <a href="#gamdig-types" style="color:#0000EE;text-decoration: underline;">below</a>.
+        Recommend visiting the <a href="https://github.com/gamedig/node-gamedig#games-list" target="_blank" style="color:#0000EE;text-decoration: underline;">GameDig GitHub page</a> for more information about the server type you are trying to query. Some types require extra setup.
     </div>
 
     <div class="form-row">
@@ -79,8 +102,8 @@
     </div>
 
     <div class="form-row">
-        <label for="node-input-port"><i class="fa fa-ethernet"></i> Port</label>
-        <input type="text" id="node-input-port" placeholder="msg.host" />
+        <label for="node-input-port"><i class="fa fa-server"></i> Port</label>
+        <input type="text" id="node-input-port" placeholder="msg.port" />
     </div>
     <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
         Query port for the server (join and query port may differ).
@@ -102,7 +125,7 @@
 
     <div class="form-row">
         <label for="node-input-max_attempts"><i class="fa fa-cogs"></i> Max Attempts</label>
-        <input type="text" id="node-input-max_attempts" placeholder="1" />
+        <input type="text" id="node-input-max_attempts" placeholder="msg.max_attempts (default: 1)" />
     </div>
     <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
         Number of attempts to query server in case of failure.
@@ -110,52 +133,85 @@
 
     <div class="form-row">
         <label for="node-input-socket_timeout"><i class="fa fa-cogs"></i> Socket Timeout</label>
-        <input type="text" id="node-input-socket_timeout" placeholder="2000" />
+        <input type="text" id="node-input-socket_timeout" placeholder="msg.socket_timeout (default: 2000)" />
     </div>
     <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
         Milliseconds to wait for a single packet. Beware that increasing this will cause many queries to take longer even if the server is online.
     </div>
 
     <div class="form-row">
-        <label for="node-input-attempt_timeout"><i class="fas fa-cogs"></i> Attempt Timeout</label>
-        <input type="text" id="node-input-attempt_timeout" placeholder="10000" />
+        <label for="node-input-attempt_timeout"><i class="fa fa-cogs"></i> Attempt Timeout</label>
+        <input type="text" id="node-input-attempt_timeout" placeholder="msg.attempt_timeout (default: 10000)" />
     </div>
     <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
         Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first.
     </div>
 
-    <h3 id="gamdig-types">Server Types</h3>
-    <p>
-        Search available types below.<br>
-        You can also view the list <a href="https://github.com/gamedig/node-gamedig#games-list" target="_blank" style="color:#0000EE;text-decoration: underline;">here</a>.
-    </p>
-
-    <div class="row">
-        <input type="text" id="query-game-server-types-search" placeholder="Search types.." style="margin-bottom: 10px;" />
+    <div class="form-row">
+        <label for="node-input-given_port_only"><i class="fa fa-lock"></i> Lock port</label>
+        <input
+                type="checkbox"
+                id="node-input-given_port_only"
+                style="width: auto; vertical-align: top"
+        />
+        <span>
+            Only attempt to query server on given port (default: false).
+        </span>
     </div>
-    <div id="query-game-server-types"></div>
-    <script type="text/javascript">
-        $("#query-game-server-types-search").on("input", function(e) {
-            let value = $(this).val();
-            if(value.length) {
-                $(".query-game-server-type-row").each(function(i, elem){
-                    console.log('yay', $(elem).text(), value, $(elem).text().indexOf(value));
-                    if($(elem).text().toLowerCase().indexOf(value.toLowerCase()) > -1) {
-                        $(elem).show();
-                    } else {
-                        $(elem).hide();
-                    }
-                });
-                return;
-            }
 
-            $(".query-game-server-type-row").show();
-        });
-    </script>
+    <div class="form-row">
+        <label for="node-input-debug"><i class="fa fa-bug"></i> Debug mode</label>
+        <input
+                type="checkbox"
+                id="node-input-debug"
+                style="width: auto; vertical-align: top"
+        />
+        <span>
+        Enables massive amounts of debug logging to stdout.
+        </span>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-request_rules" style="vertical-align: top"><i class="fa fa-server"></i> Request rules</label>
+        <div style="width: 50%;display: inline-block;">
+            <input
+                    type="checkbox"
+                    id="node-input-request_rules"
+                    style="width: auto; vertical-align: top"
+            />
+            For many valve games, additional 'rules' may be fetched into the unstable raw field by setting this to true. Beware that this may increase query time and this is for Valve games only.
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-output_options" style="vertical-align: top"><i class="fa fa-server"></i> Output options</label>
+        <div style="width: 50%;display: inline-block;">
+            <input
+                    type="checkbox"
+                    id="node-input-output_options"
+                    style="width: auto; vertical-align: top"
+            />
+            Outputs <code style="white-space: normal;">msg.options</code> as an object that contains all the options used to query the server using GameDig. Note: If you pass <code style="white-space: normal;">msg.options</code> as an input it will override all set options so make sure you unset it if chaining multiple server query nodes together unless that is what you want.
+        </div>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-ip_family"><i class="fa fa-server"></i> IP Rules</label>
+        <select
+                id="node-input-ip_family"
+                style="width: auto; vertical-align: top">
+            <option value="0">IPv4 and IPv6</option>
+            <option value="4">IPv4</option>
+            <option value="6">IPv6</option>
+        </select>
+    </div>
+    <div style="margin-left: 105px;width: 50%;margin-bottom: 10px;margin-top: -10px;">
+        IP family/version returned when looking up hostnames via DNS, can be IPv4 and IPv6, IPv4 only or IPv6 only.
+    </div>
 </script>
 
 <script type="text/html" data-help-name="query-game-server">
-    <p>Query most Game/Voice server's using the <a href="https://github.com/gamedig/node-gamedig" target="_blank">GameDig</a> library.</p>
+    <p>Query most Game/Voice server's using the <a href="https://github.com/gamedig/node-gamedig" target="_blank">GameDig</a> library. I recommend visiting the <a href="https://github.com/gamedig/node-gamedig" target="_blank">node-gamedig GitHub page</a> for more documentation.</p>
 
     <h3>Inputs</h3>
     <dl class="message-properties">
@@ -175,6 +231,11 @@
         <dd>Query port of the server. Ignored if configured on the node. Uses default query port for the server type if left empty.</dd>
 
         <dt class="optional">
+            msg.options <span class="property-type">object | null</span>
+        </dt>
+        <dd>Set additional GameDig options. This overrides all other methods of setting options. Can be used for example to set <code style="white-space: normal;">msg.options.guildId</code> that is required for querying Discord servers.</dd>
+
+        <dt class="optional">
             msg.max_attempts <span class="property-type">integer | null</span>
         </dt>
         <dd>Number of attempts to query server in case of failure. Ignored if configured on the node.</dd>
@@ -188,6 +249,26 @@
             msg.attempt_timeout <span class="property-type">integer | null</span>
         </dt>
         <dd>Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first. Ignored if configured on the node.</dd>
+
+        <dt class="optional">
+            msg.given_port_only <span class="property-type">boolean</span>
+        </dt>
+        <dd>Only attempt to query server on given port. Ignored if configured on the node.</dd>
+
+        <dt class="optional">
+            msg.ip_family <span class="property-type">number</span>
+        </dt>
+        <dd>IP family/version returned when looking up hostnames via DNS, can be 0 (IPv4 and IPv6), 4 (IPv4 only) or 6 (IPv6 only). (default 0).</dd>
+
+        <dt class="optional">
+            msg.debug <span class="property-type">boolean</span>
+        </dt>
+        <dd>Enables massive amounts of debug logging to stdout. (default false)</dd>
+
+        <dt class="optional">
+            msg.request_rules <span class="property-type">boolean</span>
+        </dt>
+        <dd>For many valve games, additional 'rules' may be fetched into the unstable raw field by setting this to true. Beware that this may increase query time and this is for Valve games only.</dd>
     </dl>
 
     <h3>Outputs</h3>
@@ -223,18 +304,8 @@
         <dd>Query port of the server. Ignored if configured on the node.</dd>
 
         <dt>
-            msg.max_attempts <span class="property-type">integer</span>
+            msg.options <span class="property-type">object | undefined</span>
         </dt>
-        <dd>Number of attempts to query server in case of failure. Ignored if configured on the node.</dd>
-
-        <dt>
-            msg.socket_timeout <span class="property-type">integer</span>
-        </dt>
-        <dd>Milliseconds to wait for a single packet. Beware that increasing this will cause many queries to take longer even if the server is online. Ignored if configured on the node.</dd>
-
-        <dt>
-            msg.attempt_timeout <span class="property-type">integer</span>
-        </dt>
-        <dd>Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first. Ignored if configured on the node.</dd>
+        <dd>Only set if configured to do so. Will return all the options passed to GameDig to query the server.</dd>
     </dl>
 </script>
