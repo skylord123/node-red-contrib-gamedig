@@ -108,7 +108,7 @@ module.exports = function(RED) {
 			// so we just use regex to parse the info from the README
 			// this could break so we also reference the gamedig repo
 			let availableTypesContent = fs.readFileSync(require.resolve("gamedig/games.txt"), 'utf-8')
-				results = [];
+				server_types = [];
 
 			availableTypesContent
 				.split(/\r?\n/)
@@ -126,12 +126,15 @@ module.exports = function(RED) {
 					// avp2010|Aliens vs. Predator (2010)|valve|port=27015
 
 					let [game_type, game_name, game_protocol] = line.split('|');
-					results.push({
-						'name': game_type,
+					server_types.push({
+						'name': game_name,
 						'type': game_type,
 						'protocol': game_protocol
 					});
 				});
-			res.json(results);
+			res.json({
+				'result': 'ok',
+				'server_types': server_types
+			});
 		});
 };
