@@ -14,7 +14,8 @@
             given_port_only:  { value: '' },
             ip_family:        { value: '0' },
             debug:            { value: '' },
-            request_rules:    { value: '' }
+            request_rules:    { value: '' },
+            output_options:   { value: '' }
         },
         inputs:1,
         outputs:1,
@@ -183,6 +184,18 @@
     </div>
 
     <div class="form-row">
+        <label for="node-input-output_options" style="vertical-align: top"><i class="fa fa-server"></i> Output options</label>
+        <div style="width: 50%;display: inline-block;">
+            <input
+                    type="checkbox"
+                    id="node-input-output_options"
+                    style="width: auto; vertical-align: top"
+            />
+            Outputs <code style="white-space: normal;">msg.options</code> as an object that contains all the options used to query the server using GameDig. Note: If you pass <code style="white-space: normal;">msg.options</code> as an input it will override all set options so make sure you unset it if chaining multiple server query nodes together unless that is what you want.
+        </div>
+    </div>
+
+    <div class="form-row">
         <label for="node-input-ip_family"><i class="fa fa-server"></i> IP Rules</label>
         <select
                 id="node-input-ip_family"
@@ -216,6 +229,11 @@
             msg.port <span class="property-type">integer | null</span>
         </dt>
         <dd>Query port of the server. Ignored if configured on the node. Uses default query port for the server type if left empty.</dd>
+
+        <dt class="optional">
+            msg.options <span class="property-type">object | null</span>
+        </dt>
+        <dd>Set additional GameDig options. This overrides all other methods of setting options. Can be used for example to set <code style="white-space: normal;">msg.options.guildId</code> that is required for querying Discord servers.</dd>
 
         <dt class="optional">
             msg.max_attempts <span class="property-type">integer | null</span>
@@ -286,18 +304,8 @@
         <dd>Query port of the server. Ignored if configured on the node.</dd>
 
         <dt>
-            msg.max_attempts <span class="property-type">integer</span>
+            msg.options <span class="property-type">object | undefined</span>
         </dt>
-        <dd>Number of attempts to query server in case of failure. Ignored if configured on the node.</dd>
-
-        <dt>
-            msg.socket_timeout <span class="property-type">integer</span>
-        </dt>
-        <dd>Milliseconds to wait for a single packet. Beware that increasing this will cause many queries to take longer even if the server is online. Ignored if configured on the node.</dd>
-
-        <dt>
-            msg.attempt_timeout <span class="property-type">integer</span>
-        </dt>
-        <dd>Milliseconds allowed for an entire query attempt. This timeout is not commonly hit, as the socketTimeout typically fires first. Ignored if configured on the node.</dd>
+        <dd>Only set if configured to do so. Will return all the options passed to GameDig to query the server.</dd>
     </dl>
 </script>

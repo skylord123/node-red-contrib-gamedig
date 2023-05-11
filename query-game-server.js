@@ -4,7 +4,7 @@ module.exports = function(RED) {
 
     function QueryGameServer(config) {
         RED.nodes.createNode(this, config);
-		var node = this;
+		let node = this;
         this.server_type = config.server_type;
 		this.host = config.host;
 		this.port = config.port;
@@ -16,67 +16,46 @@ module.exports = function(RED) {
 		this.ip_family = config.ip_family || 0;
 		this.debug = config.debug || false;
 		this.request_rules = config.request_rules || false;
+		this.output_options = config.output_options || false;
         node.on('input', function(msg) {
-        	if(node.server_type) {
-				msg.server_type = node.server_type;
+			let options = {
+				'type': node.server_type || msg.server_type || undefined,
+				'host': node.host || msg.host || undefined,
+				'port': node.port || msg.port || undefined,
+				'maxAttempts': node.max_attempts || msg.max_attempts || undefined,
+				'socketTimeout': node.socket_timeout || msg.socket_timeout || undefined,
+				'attemptTimeout': node.attempt_timeout || msg.attempt_timeout || undefined,
+				'givenPortOnly': node.given_port_only || msg.given_port_only || undefined,
+				'ipFamily': node.ip_family || msg.ip_family || undefined,
+				'debug': node.debug || msg.config || undefined,
+				'requestRules': node.request_rules || msg.request_rules || undefined
+			};
+
+			if(typeof msg.options === 'object' && msg.options)
+			{
+				options = {...options, ...msg.options};
 			}
 
-			if(node.host) {
-				msg.host = node.host;
+			// set the things we want to return
+			msg.server_type = options.type;
+			msg.host = options.host;
+			msg.port = options.port;
+			if(node.output_options)
+			{
+				msg.options = options;
 			}
-			if(!msg.host) {
-				node.error("msg.host missing from input.");
+
+			if(!options.host) {
+				node.error("host missing from input.");
 				return;
 			}
 
-        	if(node.port) {
-        		msg.port = node.port;
-        	}
-
-        	if(node.halt_if) {
-        		msg.halt_if = node.halt_if;
+			if(!options.type) {
+				node.error("server_type missing from input.");
+				return;
 			}
 
-        	if(node.max_attempts) {
-        		msg.max_attempts = node.max_attempts;
-			}
-
-			if(node.socket_timeout) {
-				msg.socket_timeout = node.socket_timeout;
-			}
-
-			if(node.attempt_timeout) {
-				msg.attempt_timeout = node.attempt_timeout;
-			}
-
-			if(node.given_port_only) {
-				msg.given_port_only = node.given_port_only;
-			}
-
-			if(node.ip_family) {
-				msg.ip_family = node.ip_family;
-			}
-
-			if(node.debug) {
-				msg.debug = node.debug;
-			}
-
-			if(node.request_rules) {
-				msg.request_rules = node.request_rules;
-			}
-
-			gamedig.query({
-				'type': msg.server_type,
-				'host': msg.host,
-				'port': msg.port,
-				'maxAttempts': msg.max_attempts,
-				'socketTimeout': msg.socket_timeout,
-				'attemptTimeout': msg.attempt_timeout,
-				'givenPortOnly': msg.given_port_only,
-				'ipFamily': msg.ip_family,
-				'debug': msg.debug,
-				'requestRules': msg.request_rules
-			})
+			gamedig.query(options)
 				.then(function(state) {
 					msg.payload = 'online';
 					msg.data = state;

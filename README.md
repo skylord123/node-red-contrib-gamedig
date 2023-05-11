@@ -6,7 +6,9 @@ This package adds the node "Query Game Server" that uses the NPM package [GameDi
 
 You can pass the server type, host, and port on the input message or define them on the node (settings defined on the node will override msg values).
 
-[Click here](https://github.com/gamedig/node-gamedig#return-value) if you want more information about what this library parses and standardizes from the server response.
+You can also specify manual GameDig options using `msg.options` as an input. This will override any other options. For example: you can set `msg.options.guildId` that is required for querying Discord servers.
+
+Visit the [GameDig GitLab page](https://github.com/gamedig/node-gamedig#return-value) if you want more information about what this library parses and standardizes from the server response.
 
 ### Usage Examples
 - #### Inserting query data into InfluxDB and using Grafana to view results
