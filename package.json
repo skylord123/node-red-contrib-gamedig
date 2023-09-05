@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-gamedig",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Query for the status of any game server using node-red",
   "repository": {
     "type": "git",
@@ -23,6 +23,6 @@
     }
   },
   "dependencies": {
-    "gamedig": "^4.0.6"
+    "gamedig": "^4.0.7"
   }
 }
