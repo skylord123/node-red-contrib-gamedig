@@ -2,13 +2,19 @@
 
 Query for server information of most game/voice servers using Node-RED.
 
-This package adds the node "Query Game Server" that uses the NPM package [GameDig](https://www.npmjs.com/package/gamedig) to query if a server is online or not and if so returns the data of the server.
+This package adds the node `Query Game Server` that uses the NPM package [GameDig](https://www.npmjs.com/package/gamedig) to query if a server is online or not and if so returns the data of the server.
 
 You can pass the server type, host, and port on the input message or define them on the node (settings defined on the node will override msg values).
 
 You can also specify manual GameDig options using `msg.options` as an input. This will override any other options. For example: you can set `msg.options.guildId` that is required for querying Discord servers.
 
 Visit the [GameDig GitLab page](https://github.com/gamedig/node-gamedig#return-value) if you want more information about what this library parses and standardizes from the server response.
+
+### Help fund development
+
+If you use this node and find it helpful please consider donating to help fund future development. All of my software is free and open-source and this helps keep it that way.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B51BM7C)
 
 ### Usage Examples
 - #### Inserting query data into InfluxDB and using Grafana to view results
