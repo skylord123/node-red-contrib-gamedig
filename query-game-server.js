@@ -55,7 +55,7 @@ module.exports = function(RED) {
 				.then(function(state) {
 					msg.payload = 'online';
 					msg.data = state;
-		            if (msg.payload === msg.halt_if) {
+		            if (msg.payload === node.halt_if) {
 		                return null;
 		            }
                     node.status({fill:"green",shape:"dot",text: 'Online ' + msg.data.players.length + ' players' });
@@ -65,7 +65,7 @@ module.exports = function(RED) {
 					msg.data = {
 						'error': error
 					};
-		            if (msg.payload === msg.halt_if) {
+		            if (msg.payload === node.halt_if) {
 		                return null;
 		            }
                     node.status({fill:"red", shape:"dot", text: 'Offline'});
