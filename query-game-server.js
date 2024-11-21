@@ -95,9 +95,7 @@ module.exports = function(RED) {
 						msg.payload = 'online';
 						// GameDig returns Results, Players, and Player objects that we need to convert
 						// to standard Array/Object instances so that Node-RED doesn't error
-						console.log("RESULT", state);
 						msg.data = deepCloneToPlain(state);
-						console.log("FORMATTED", msg.data);
 
 						if (msg.payload === node.halt_if) {
 							return null;
@@ -131,7 +129,6 @@ module.exports = function(RED) {
 		"/gamedig/types",
 		RED.auth.needsPermission('flows.write'),
 		function(req, res) {
-			console.log(games);
 			let server_types = Object.keys(games).map(gameKey => {
 				let game = games[gameKey];
 				game["type"] = gameKey;
