@@ -1,6 +1,44 @@
 module.exports = function(RED) {
 	const { GameDig, games } = require('gamedig');
 
+	function deepCloneToPlain(obj) {
+		// Handle null/undefined
+		if (!obj) {
+			return obj;
+		}
+
+		// Handle arrays and array-like objects (including Players collection)
+		if (Array.isArray(obj) || (typeof obj === 'object' && obj.length >= 0)) {
+			return Array.from(obj, item => deepCloneToPlain(item));
+		}
+
+		// Handle instances of custom classes (like Player, Results)
+		if (obj && typeof obj === 'object' && Object.getPrototypeOf(obj) !== Object.prototype) {
+			// Convert to plain object while preserving enumerable properties
+			const plainObj = {};
+			for (const key of Object.keys(obj)) {
+				plainObj[key] = deepCloneToPlain(obj[key]);
+			}
+			return plainObj;
+		}
+
+		// Handle plain objects
+		if (obj && typeof obj === 'object') {
+			const result = {};
+			for (const key of Object.keys(obj)) {
+				// Skip the Buffer instance
+				if (key === 'rulesBytes' && Buffer.isBuffer(obj[key])) {
+					continue;
+				}
+				result[key] = deepCloneToPlain(obj[key]);
+			}
+			return result;
+		}
+
+		// Return primitive values as-is
+		return obj;
+	}
+
     function QueryGameServer(config) {
         RED.nodes.createNode(this, config);
 		let node = this;
@@ -53,24 +91,38 @@ module.exports = function(RED) {
 
 			GameDig.query(options)
 				.then(function(state) {
-					msg.payload = 'online';
-					msg.data = state;
-		            if (msg.payload === node.halt_if) {
-		                return null;
-		            }
-                    node.status({fill:"green",shape:"dot",text: 'Online ' + msg.data.players.length + ' players' });
-                    node.send(msg);
-				}).catch(function(error) {
+					try {
+						msg.payload = 'online';
+						// GameDig returns Results, Players, and Player objects that we need to convert
+						// to standard Array/Object instances so that Node-RED doesn't error
+						console.log("RESULT", state);
+						msg.data = deepCloneToPlain(state);
+						console.log("FORMATTED", msg.data);
+
+						if (msg.payload === node.halt_if) {
+							return null;
+						}
+						node.status({ fill: "green", shape: "dot", text: `Online ${state.players.length} players` });
+						node.send(msg);
+					} catch(e) {
+						node.error("Failed returning data: " + e.stack);
+					}
+				})
+				.catch(function(error) {
 					msg.payload = 'offline';
 					msg.data = {
-						'error': error
+						error,
+						stack: error.stack,
 					};
-		            if (msg.payload === node.halt_if) {
-		                return null;
-		            }
-                    node.status({fill:"red", shape:"dot", text: 'Offline'});
-                	node.send(msg);
+					if (msg.payload === node.halt_if) {
+						return null;
+					}
+					node.status({ fill: "red", shape: "dot", text: "Offline" });
+					node.send(msg);
+					node.error(`GameDig Error: \n${error.stack}`);
+					console.error(error);
 				});
+
         });
     }
     RED.nodes.registerType("query-game-server", QueryGameServer);
