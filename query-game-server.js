@@ -1,6 +1,27 @@
 module.exports = function(RED) {
 	const { GameDig, games } = require('gamedig');
 
+	const SERVER_DOWN_PATTERNS = [
+		/Timed out/i,
+		/Failed all \d+ attempts/,
+		/ECONNREFUSED/,
+		/ENOTFOUND/,
+		/EHOSTUNREACH/,
+		/ENETUNREACH/,
+		/ETIMEDOUT/,
+		/ECONNRESET/,
+		/EAI_AGAIN/
+	];
+
+	function isServerDownError(error) {
+		const stack = (error && (error.stack || error.message)) || '';
+		const errorLines = stack.split('\n').filter(line => /^\s*Error:/.test(line));
+		if (errorLines.length === 0) {
+			return SERVER_DOWN_PATTERNS.some(re => re.test(stack));
+		}
+		return errorLines.every(line => SERVER_DOWN_PATTERNS.some(re => re.test(line)));
+	}
+
 	function deepCloneToPlain(obj) {
 		// Handle null/undefined
 		if (!obj) {
@@ -117,8 +138,9 @@ module.exports = function(RED) {
 					}
 					node.status({ fill: "red", shape: "dot", text: "Offline" });
 					node.send(msg);
-					node.error(`GameDig Error: \n${error.stack}`);
-					console.error(error);
+					if (!isServerDownError(error)) {
+						node.error(`GameDig Error: \n${error.stack}`, msg);
+					}
 				});
 
         });

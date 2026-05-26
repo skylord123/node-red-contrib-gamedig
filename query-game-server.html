@@ -41,14 +41,17 @@
                 $("#node-input-strip_colors").prop('checked', true);
             }
 
-            $.getJSON('/gamedig/types', function(data) {
-                if(data.result !== 'ok' || !data.hasOwnProperty("server_types"))
-                {
+            RED.comms.request({
+                url: 'gamedig/types',
+                type: 'GET'
+            }).done(function(data) {
+                if (data.result !== 'ok' || !data.hasOwnProperty("server_types")) {
                     console.error("server_types failed to load");
                     return;
                 }
-
                 server_types = data.server_types;
+            }).fail(function(err) {
+                console.error("Error retrieving server_types:", err);
             });
 
             $("#node-input-server_type").autoComplete({
