@@ -75,7 +75,7 @@ module.exports = function(RED) {
 				'socketTimeout': Number(config.socket_timeout || msg.socket_timeout || 2000),
 				'attemptTimeout': Number(config.attempt_timeout || msg.attempt_timeout || 10000),
 				'givenPortOnly': config.given_port_only || msg.given_port_only || false,
-				'ipFamily': config.ip_family || msg.ip_family || undefined,
+				'ipFamily': Number(config.ip_family) || Number(msg.ip_family) || 0,
 				'debug': config.debug || msg.debug || undefined,
 				'requestRules': config.request_rules || msg.request_rules || undefined,
 				'stripColors': typeof config.strip_colors === "undefined" ? true : config.strip_colors
