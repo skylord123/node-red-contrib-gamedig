@@ -148,16 +148,12 @@ module.exports = function(RED) {
     }
     RED.nodes.registerType("query-game-server", QueryGameServer);
 
+	const server_types = Object.keys(games).map(type => ({ ...games[type], type }));
+
 	RED.httpAdmin.get(
 		"/gamedig/types",
 		RED.auth.needsPermission('flows.write'),
 		function(req, res) {
-			let server_types = Object.keys(games).map(gameKey => {
-				let game = games[gameKey];
-				game["type"] = gameKey;
-				return game;
-			});
-
 			res.json({
 				'result': 'ok',
 				'server_types': server_types
