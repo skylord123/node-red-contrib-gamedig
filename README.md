@@ -8,7 +8,7 @@ You can pass the server type, host, and port on the input message or define them
 
 You can also specify manual GameDig options using `msg.options` as an input. This will override any other options. For example: you can set `msg.options.guildId` that is required for querying Discord servers.
 
-Visit the [GameDig GitLab page](https://github.com/gamedig/node-gamedig#return-value) if you want more information about what this library parses and standardizes from the server response.
+Visit the [GameDig GitHub page](https://github.com/gamedig/node-gamedig#return-value) if you want more information about what this library parses and standardizes from the server response.
 
 ### Help fund development
 
@@ -27,7 +27,7 @@ If you use this node and find it helpful please consider donating to help fund f
 
 ### Other Packages
 
-- [node-red-contrib-matrix-chat](https://www.npmjs.com/package/node-red-contrib-gamedig) - Matrix chat server client for Node-RED
+- [node-red-contrib-matrix-chat](https://www.npmjs.com/package/node-red-contrib-matrix-chat) - Matrix chat server client for Node-RED
 
 ### Developers
 So far me (skylord123) is the only person that has contributed towards this package. Feel free to do any pull-requests to get your name here!

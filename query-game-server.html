@@ -265,7 +265,7 @@
         <dt class="optional">
             msg.server_type <span class="property-type">string | null</span>
         </dt>
-        <dd>Server type to query. View available types either at the bottom of the node editor or <a href="https://github.com/sonicsnes/node-gamedig#games-list" style="color:#0000EE;" target="_blank">click here</a>. Ignored if configured on the node.</dd>
+        <dd>Server type to query. View available types <a href="https://github.com/gamedig/node-gamedig#games-list" style="color:#0000EE;" target="_blank">here</a>. Ignored if configured on the node.</dd>
 
         <dt class="optional">
             msg.host <span class="property-type">string | null</span>
@@ -333,17 +333,17 @@
         <dt>
             msg.data <span class="property-type">object</span>
         </dt>
-        <dd>Returns back the results we got from GameDig. Click <a href="https://github.com/sonicsnes/node-gamedig#return-value" target="_blank" style="color:#0000EE;">here</a> for more information on what this contains.</dd>
+        <dd>Returns back the results we got from GameDig. Click <a href="https://github.com/gamedig/node-gamedig#return-value" target="_blank" style="color:#0000EE;">here</a> for more information on what this contains.</dd>
 
         <dt>
-            msg.data.error <span class="property-type">string</span>
+            msg.data.error <span class="property-type">Error</span>
         </dt>
         <dd>Reason the server failed to query. Only returns if <code>msg.payload</code> is <code>offline</code>.</dd>
 
         <dt>
             msg.server_type <span class="property-type">string</span>
         </dt>
-        <dd>Server type to query. View available types either at the bottom of the node editor or <a href="https://github.com/sonicsnes/node-gamedig#games-list" style="color:#0000EE;" target="_blank">click here</a>. Ignored if configured on the node.</dd>
+        <dd>Server type that was queried.</dd>
 
         <dt>
             msg.host <span class="property-type">string</span>
@@ -358,7 +358,7 @@
         <dt>
             msg.port <span class="property-type">integer</span>
         </dt>
-        <dd>Query port of the server. Ignored if configured on the node.</dd>
+        <dd>Query port of the server.</dd>
 
         <dt>
             msg.options <span class="property-type">object | undefined</span>
