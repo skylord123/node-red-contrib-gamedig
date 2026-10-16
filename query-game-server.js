@@ -22,41 +22,23 @@ module.exports = function(RED) {
 		return errorLines.every(line => SERVER_DOWN_PATTERNS.some(re => re.test(line)));
 	}
 
+	// GameDig returns Results, Players and Player class instances; Node-RED
+	// cannot clone those, so convert them to plain objects and arrays.
 	function deepCloneToPlain(obj) {
-		// Handle null/undefined
-		if (!obj) {
-			return obj;
+		if (Array.isArray(obj)) {
+			return Array.from(obj, deepCloneToPlain);
 		}
-
-		// Handle arrays and array-like objects (including Players collection)
-		if (Array.isArray(obj) || (typeof obj === 'object' && obj.length >= 0)) {
-			return Array.from(obj, item => deepCloneToPlain(item));
-		}
-
-		// Handle instances of custom classes (like Player, Results)
-		if (obj && typeof obj === 'object' && Object.getPrototypeOf(obj) !== Object.prototype) {
-			// Convert to plain object while preserving enumerable properties
-			const plainObj = {};
-			for (const key of Object.keys(obj)) {
-				plainObj[key] = deepCloneToPlain(obj[key]);
-			}
-			return plainObj;
-		}
-
-		// Handle plain objects
 		if (obj && typeof obj === 'object') {
 			const result = {};
 			for (const key of Object.keys(obj)) {
-				// Skip the Buffer instance
-				if (key === 'rulesBytes' && Buffer.isBuffer(obj[key])) {
+				// Skip raw rule bytes
+				if (Buffer.isBuffer(obj[key])) {
 					continue;
 				}
 				result[key] = deepCloneToPlain(obj[key]);
 			}
 			return result;
 		}
-
-		// Return primitive values as-is
 		return obj;
 	}
 
@@ -65,25 +47,36 @@ module.exports = function(RED) {
 		let node = this;
 		this.halt_if = config.halt_if;
 		this.output_options = config.output_options || false;
-        node.on('input', function(msg) {
+        node.on('input', function(msg, send, done) {
+			// Node-RED 0.x does not pass send/done
+			send = send || function() { node.send.apply(node, arguments); };
+			done = done || function(err) { if (err) node.error(err, msg); };
+
 			let options = {
 				'type': config.server_type || msg.server_type || undefined,
 				'host': config.host || msg.host || undefined,
 				'address': config.address || msg.address || undefined,
 				'port': config.port || msg.port || undefined,
-				'maxAttempts': config.max_attempts || msg.max_attempts || 1,
-				'socketTimeout': config.socket_timeout || msg.socket_timeout || 2000,
-				'attemptTimeout': config.attempt_timeout || msg.attempt_timeout || 10000,
+				'maxRetries': Number(config.max_attempts || msg.max_attempts || 1),
+				'socketTimeout': Number(config.socket_timeout || msg.socket_timeout || 2000),
+				'attemptTimeout': Number(config.attempt_timeout || msg.attempt_timeout || 10000),
 				'givenPortOnly': config.given_port_only || msg.given_port_only || false,
-				'ipFamily': config.ip_family || msg.ip_family || undefined,
-				'debug': config.debug || msg.config || undefined,
+				'ipFamily': Number(config.ip_family) || Number(msg.ip_family) || 0,
+				'debug': config.debug || msg.debug || undefined,
 				'requestRules': config.request_rules || msg.request_rules || undefined,
-				'strip_colors': typeof config.strip_colors === "undefined" ? true : config.strip_colors
+				'stripColors': typeof config.strip_colors === "undefined" ? true : config.strip_colors
 			};
 
 			if(typeof msg.options === 'object' && msg.options)
 			{
 				options = {...options, ...msg.options};
+			}
+
+			// GameDig only resolves host when address is absent, so drop unset options
+			for (const key of Object.keys(options)) {
+				if (options[key] === undefined) {
+					delete options[key];
+				}
 			}
 
 			// set the things we want to return
@@ -101,12 +94,12 @@ module.exports = function(RED) {
 			}
 
 			if(!msg.host && !msg.address) {
-				node.error("host/address missing from input.");
+				done("host/address missing from input.");
 				return;
 			}
 
 			if(!options.type) {
-				node.error("server_type missing from input.");
+				done("server_type missing from input.");
 				return;
 			}
 
@@ -114,17 +107,15 @@ module.exports = function(RED) {
 				.then(function(state) {
 					try {
 						msg.payload = 'online';
-						// GameDig returns Results, Players, and Player objects that we need to convert
-						// to standard Array/Object instances so that Node-RED doesn't error
 						msg.data = deepCloneToPlain(state);
 
-						if (msg.payload === node.halt_if) {
-							return null;
-						}
 						node.status({ fill: "green", shape: "dot", text: `Online ${state.players.length} players` });
-						node.send(msg);
+						if (msg.payload !== node.halt_if) {
+							send(msg);
+						}
+						done();
 					} catch(e) {
-						node.error("Failed returning data: " + e.stack);
+						done("Failed returning data: " + e.stack);
 					}
 				})
 				.catch(function(error) {
@@ -133,30 +124,23 @@ module.exports = function(RED) {
 						error,
 						stack: error.stack,
 					};
-					if (msg.payload === node.halt_if) {
-						return null;
-					}
 					node.status({ fill: "red", shape: "dot", text: "Offline" });
-					node.send(msg);
-					if (!isServerDownError(error)) {
-						node.error(`GameDig Error: \n${error.stack}`, msg);
+					if (msg.payload !== node.halt_if) {
+						send(msg);
 					}
+					done(isServerDownError(error) ? undefined : `GameDig Error: \n${error.stack}`);
 				});
 
         });
     }
     RED.nodes.registerType("query-game-server", QueryGameServer);
 
+	const server_types = Object.keys(games).map(type => ({ ...games[type], type }));
+
 	RED.httpAdmin.get(
 		"/gamedig/types",
 		RED.auth.needsPermission('flows.write'),
 		function(req, res) {
-			let server_types = Object.keys(games).map(gameKey => {
-				let game = games[gameKey];
-				game["type"] = gameKey;
-				return game;
-			});
-
 			res.json({
 				'result': 'ok',
 				'server_types': server_types
