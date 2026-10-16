@@ -118,10 +118,10 @@ module.exports = function(RED) {
 						// to standard Array/Object instances so that Node-RED doesn't error
 						msg.data = deepCloneToPlain(state);
 
+						node.status({ fill: "green", shape: "dot", text: `Online ${state.players.length} players` });
 						if (msg.payload === node.halt_if) {
 							return null;
 						}
-						node.status({ fill: "green", shape: "dot", text: `Online ${state.players.length} players` });
 						node.send(msg);
 					} catch(e) {
 						node.error("Failed returning data: " + e.stack);
@@ -133,10 +133,10 @@ module.exports = function(RED) {
 						error,
 						stack: error.stack,
 					};
+					node.status({ fill: "red", shape: "dot", text: "Offline" });
 					if (msg.payload === node.halt_if) {
 						return null;
 					}
-					node.status({ fill: "red", shape: "dot", text: "Offline" });
 					node.send(msg);
 					if (!isServerDownError(error)) {
 						node.error(`GameDig Error: \n${error.stack}`, msg);
