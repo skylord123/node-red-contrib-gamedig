@@ -22,41 +22,23 @@ module.exports = function(RED) {
 		return errorLines.every(line => SERVER_DOWN_PATTERNS.some(re => re.test(line)));
 	}
 
+	// GameDig returns Results, Players and Player class instances; Node-RED
+	// cannot clone those, so convert them to plain objects and arrays.
 	function deepCloneToPlain(obj) {
-		// Handle null/undefined
-		if (!obj) {
-			return obj;
+		if (Array.isArray(obj)) {
+			return Array.from(obj, deepCloneToPlain);
 		}
-
-		// Handle arrays and array-like objects (including Players collection)
-		if (Array.isArray(obj) || (typeof obj === 'object' && obj.length >= 0)) {
-			return Array.from(obj, item => deepCloneToPlain(item));
-		}
-
-		// Handle instances of custom classes (like Player, Results)
-		if (obj && typeof obj === 'object' && Object.getPrototypeOf(obj) !== Object.prototype) {
-			// Convert to plain object while preserving enumerable properties
-			const plainObj = {};
-			for (const key of Object.keys(obj)) {
-				plainObj[key] = deepCloneToPlain(obj[key]);
-			}
-			return plainObj;
-		}
-
-		// Handle plain objects
 		if (obj && typeof obj === 'object') {
 			const result = {};
 			for (const key of Object.keys(obj)) {
-				// Skip the Buffer instance
-				if (key === 'rulesBytes' && Buffer.isBuffer(obj[key])) {
+				// Skip raw rule bytes
+				if (Buffer.isBuffer(obj[key])) {
 					continue;
 				}
 				result[key] = deepCloneToPlain(obj[key]);
 			}
 			return result;
 		}
-
-		// Return primitive values as-is
 		return obj;
 	}
 
@@ -125,8 +107,6 @@ module.exports = function(RED) {
 				.then(function(state) {
 					try {
 						msg.payload = 'online';
-						// GameDig returns Results, Players, and Player objects that we need to convert
-						// to standard Array/Object instances so that Node-RED doesn't error
 						msg.data = deepCloneToPlain(state);
 
 						node.status({ fill: "green", shape: "dot", text: `Online ${state.players.length} players` });
