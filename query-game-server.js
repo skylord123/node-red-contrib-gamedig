@@ -71,14 +71,14 @@ module.exports = function(RED) {
 				'host': config.host || msg.host || undefined,
 				'address': config.address || msg.address || undefined,
 				'port': config.port || msg.port || undefined,
-				'maxAttempts': config.max_attempts || msg.max_attempts || 1,
+				'maxRetries': config.max_attempts || msg.max_attempts || 1,
 				'socketTimeout': config.socket_timeout || msg.socket_timeout || 2000,
 				'attemptTimeout': config.attempt_timeout || msg.attempt_timeout || 10000,
 				'givenPortOnly': config.given_port_only || msg.given_port_only || false,
 				'ipFamily': config.ip_family || msg.ip_family || undefined,
 				'debug': config.debug || msg.config || undefined,
 				'requestRules': config.request_rules || msg.request_rules || undefined,
-				'strip_colors': typeof config.strip_colors === "undefined" ? true : config.strip_colors
+				'stripColors': typeof config.strip_colors === "undefined" ? true : config.strip_colors
 			};
 
 			if(typeof msg.options === 'object' && msg.options)
