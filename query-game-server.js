@@ -90,6 +90,13 @@ module.exports = function(RED) {
 				options = {...options, ...msg.options};
 			}
 
+			// GameDig only resolves host when address is absent, so drop unset options
+			for (const key of Object.keys(options)) {
+				if (options[key] === undefined) {
+					delete options[key];
+				}
+			}
+
 			// set the things we want to return
 			msg.server_type = options.type;
 			if(options.host) {
