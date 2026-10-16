@@ -65,7 +65,11 @@ module.exports = function(RED) {
 		let node = this;
 		this.halt_if = config.halt_if;
 		this.output_options = config.output_options || false;
-        node.on('input', function(msg) {
+        node.on('input', function(msg, send, done) {
+			// Node-RED 0.x does not pass send/done
+			send = send || function() { node.send.apply(node, arguments); };
+			done = done || function(err) { if (err) node.error(err, msg); };
+
 			let options = {
 				'type': config.server_type || msg.server_type || undefined,
 				'host': config.host || msg.host || undefined,
@@ -101,12 +105,12 @@ module.exports = function(RED) {
 			}
 
 			if(!msg.host && !msg.address) {
-				node.error("host/address missing from input.");
+				done("host/address missing from input.");
 				return;
 			}
 
 			if(!options.type) {
-				node.error("server_type missing from input.");
+				done("server_type missing from input.");
 				return;
 			}
 
@@ -119,12 +123,12 @@ module.exports = function(RED) {
 						msg.data = deepCloneToPlain(state);
 
 						node.status({ fill: "green", shape: "dot", text: `Online ${state.players.length} players` });
-						if (msg.payload === node.halt_if) {
-							return null;
+						if (msg.payload !== node.halt_if) {
+							send(msg);
 						}
-						node.send(msg);
+						done();
 					} catch(e) {
-						node.error("Failed returning data: " + e.stack);
+						done("Failed returning data: " + e.stack);
 					}
 				})
 				.catch(function(error) {
@@ -134,13 +138,10 @@ module.exports = function(RED) {
 						stack: error.stack,
 					};
 					node.status({ fill: "red", shape: "dot", text: "Offline" });
-					if (msg.payload === node.halt_if) {
-						return null;
+					if (msg.payload !== node.halt_if) {
+						send(msg);
 					}
-					node.send(msg);
-					if (!isServerDownError(error)) {
-						node.error(`GameDig Error: \n${error.stack}`, msg);
-					}
+					done(isServerDownError(error) ? undefined : `GameDig Error: \n${error.stack}`);
 				});
 
         });
