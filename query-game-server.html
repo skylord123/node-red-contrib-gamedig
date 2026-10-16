@@ -82,8 +82,12 @@
                     if(server_type['type'] !== val) return;
                     let query_port = server_type.options.port_query || server_type.options.port || null;
 
-                    if(query_port && server_type.options.port_query_offset) {
-                        query_port += server_type.options.port_query_offset;
+                    let offset = server_type.options.port_query_offset;
+                    if(Array.isArray(offset)) {
+                        offset = offset[0];
+                    }
+                    if(query_port && offset) {
+                        query_port += offset;
                     }
 
                     $("#node-input-port").val(query_port);
